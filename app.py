@@ -1,6 +1,7 @@
 from bottle import *
 #from bottle import app, redirect, response, request, template, route, run
 from beaker.middleware import SessionMiddleware
+import os
 
 '''
 @route('/')
@@ -104,4 +105,4 @@ def remove_cart():
     session.delete()
     return redirect('/shop')
 
-run(app=my_session, port=5000)
+run(app=my_session, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
