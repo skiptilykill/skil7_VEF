@@ -17,6 +17,6 @@
     </form>
     <br><hr>
 
-    <a href="/index">til baka</a>
+    <a href="/">til baka</a>
 </body>
 </html>

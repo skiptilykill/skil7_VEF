@@ -1,4 +1,6 @@
 from bottle import *
+#from bottle import app, redirect, response, request, template, route, run
+from beaker.middleware import SessionMiddleware
 
 '''
 @route('/')
@@ -45,4 +47,61 @@ def signout():
     response.set_cookie('account', "", expires=0)
     return "You have been signed out. <br> <a href='/login'> Login</a>"
 
-run()
+#session lausn
+
+session_opt = {
+    'session.type': 'file',
+    'session.data_dir': './data'
+}
+
+products = [
+    {"pid": 1, "name": "vara A", "price": 100},
+    {"pid": 2, "name": "vara B", "price": 400},
+    {"pid": 3, "name": "vara C", "price": 800},
+    {"pid": 4, "name": "vara D", "price": 300}
+]
+
+my_session = SessionMiddleware(app(), session_opt)
+
+@route('/shop')
+def shop():
+    return template('shop', products=products)
+
+@route('/cart/add/<id>')
+def add_to_cart(id):
+    session = request.environ.get('beaker.session')
+    if session.get(id):
+        fjoldi = session.get('Fjoldi_' + id)
+        fjoldi = int(fjoldi)
+        fjoldi = fjoldi + 1
+        session['Fjoldi_' + id] = fjoldi
+    else:
+        session[id] = products[int(id) - 1]['name']
+        session['Fjoldi_' + id] = '1'
+    #session[id] = products[int(id)-1]['name']
+    session.save()
+
+    print(session)
+    return  redirect('/cart')
+
+@route('/cart')
+def cart():
+    session = request.environ.get('beaker.session')
+    karfa = []
+    karfa = []
+    for i in range(1, len(products)+1):
+        i =  str(i)
+        if session.get(i):
+            vara =  session.get(i)
+            fjoldi = session.get('Fjoldi_' + i)
+       
+            karfa.append({'vara': vara, 'fjoldi': fjoldi})
+    return template('cart', karfa=karfa)
+
+@route('/cart/remove')
+def remove_cart():
+    session = request.environ.get('beaker.session')
+    session.delete()
+    return redirect('/shop')
+
+run(app=my_session, port=5000)
